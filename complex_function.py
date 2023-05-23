@@ -1,7 +1,7 @@
 import colorsys
 from numpy import array
 import sympy as sym
-import tqdm
+import itertools
 
 class ComplexFunction:
 
@@ -22,7 +22,7 @@ class ComplexFunction:
         color_of_the_set = 255 * array(colorsys.hsv_to_rgb(i / 245.0, 0.8, 0.9))
         return tuple(color_of_the_set.astype(int))[::-1]
     
-    def converges(self, max_it: int = 1000) -> bool:
+    def converges(self, max_it: int = 200) -> bool:
         '''
         Check if `self.funciton` converges starting in z = 0
 
@@ -66,15 +66,82 @@ class JuliaSetFunc(ComplexFunction):
 class HiddinMandel(ComplexFunction):
 
     def __init__(self, l: complex) -> None:
-        z = sym.Symbol('z')
-
-        f = (z-1)*(z+1)*(z-l)
-
-        diff_f = sym.diff(f)
-
-        self.f_func = sym.lambdify(z,f,'numpy')
-        self.diff_f_func=sym.lambdify(z,diff_f,'numpy') 
         self.roots = [1, -1, l]
+
+        def f(x):
+            result = 1
+            for root in self.roots:
+                result *= (x - root)
+            return result
+        
+        def df(x):
+            result = 0
+            for products in itertools.combinations(self.roots, len(self.roots)-1):
+                p_r = 1
+                for prod in products:
+                    p_r *= (x-prod)
+                result += p_r
+            return result
+        
+        self.f_func = f
+        self.diff_f_func = df
+
+
+        
+    def resolves_newton(self, x):
+        return x - self.f_func(x)/self.diff_f_func(x)
+    
+    def converges(self, max_it: int = 20) -> bool:
+        '''
+        Check if `self.funciton` converges starting in z = 0
+
+        `max_it`: the max numbers of times the function will be applied to its self
+
+        return: `True` if the function converges before `max_it` times, and `False` otherwise
+        '''
+        z = sum(self.roots)/3
+
+        for _ in range(max_it):
+            z = self.resolves_newton(z)
+
+            for idx, root in enumerate(self.roots):
+                if abs(z-root) < 0.01:
+                    return self.color(idx)
+                
+        return (0, 0, 0)
+    
+    def color(self, i):
+        t = [50, 50, 50]
+        t[i] = 200
+        return tuple(t)
+    
+
+
+class NewtonsMethod(ComplexFunction):
+
+    def __init__(self, roots: list[complex]= [1, -1, 1+1j]) -> None:
+
+        self.roots = roots
+
+        def f(x):
+            result = 1
+            for root in self.roots:
+                result *= (x - root)
+            return result
+        
+        def df(x):
+            result = 0
+            for products in itertools.combinations(self.roots, len(self.roots)-1):
+                p_r = 1
+                for prod in products:
+                    p_r *= (x-prod)
+                result += p_r
+            return result
+        
+        self.f_func = f
+        self.diff_f_func = df
+                    
+
 
     def resolves_newton(self, x):
 

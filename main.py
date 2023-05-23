@@ -11,12 +11,12 @@ window = Tk()
 
 window.title('Mandelbrot set')
 
-hd = HolomorphicDynamics(JuliaSetFunc, frame_size)
-distances = (-1.5, -1.5, 4, 4)
+hd = HolomorphicDynamics(HiddinMandel, frame_size)
+distances = (-1.5, -1.5, 2, 2)
 frac = hd.color_points(distances)
 
 frac = Image.fromarray(np.uint8(frac), 'RGB')
-frac.save('julia.jpg')
+frac.save('output.jpg')
 img = ImageTk.PhotoImage(image=frac)
 
 
