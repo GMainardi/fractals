@@ -144,7 +144,6 @@ class NewtonsMethod(ComplexFunction):
 
 
     def resolves_newton(self, x):
-
         return x - self.f_func(x)/self.diff_f_func(x)
     
     def converges(self, max_it: int = 100) -> bool:
